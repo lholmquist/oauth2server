@@ -3,6 +3,7 @@ var thing = AeroGear.Authorization(),
 
 var responseFromAuthEndpoint,
     authWindow,
+    authURL,
     timer;
 
 thing.add({
@@ -33,9 +34,11 @@ pipeThing.add([
 function validate() {
     thing.services.coolThing.validate( responseFromAuthEndpoint, {
         success: function( response ){
-            console.log( "Should be response from Validating the access token", response );
+            addResults( "successful validate call" );
+            addResults( "access_token: " + response.access_token );
         },
         error: function( error ) {
+            addResults( "error validating" );
             console.log( "error", error );
         }
     });
@@ -44,28 +47,44 @@ function validate() {
 function callPipeRead() {
     pipeThing.pipes.userInfo.read({
         success:function( response ) {
-            console.log( "response from successful pipe", response );
+            addResults( "response from successful pipe" );
+            addResults( response.status );
         },
         error: function( error ) {
-            console.log( "error pipe", error );
-
-            //Open the window to do the dance
-            authWindow = window.open( error.authURL );
-            //Watch the window for the location to change
-            timer = setInterval( function() {
-                if( authWindow.location.href || authWindow.location.origin ) {
-                    responseFromAuthEndpoint = authWindow.location.href;
-                    clearInterval( timer );
-                    validate();
-                    authWindow.close();
-                }
-            }, 500 );
+            addResults( error.status + " " + error.statusText );
+            authURL = error.authURL;
         }
     });
 }
 
+function authorize() {
+    //Open the window to do the dance
+    addResults( "Opening Auth URL" );
+    addResults( authURL );
+    authWindow = window.open( authURL );
+    //Watch the window for the location to change
+    timer = setInterval( function() {
+        if( authWindow.location.href || authWindow.location.origin ) { //this needs to be better
+            addResults( "redirect URL is back in the child" );
+            responseFromAuthEndpoint = authWindow.location.href;
+            clearInterval( timer );
+            addResults( "Validating response returned" );
+            validate();
+            //authWindow.close();
+        }
+    }, 500 );
+}
+
+function addResults( result ) {
+    $( ".results ul" ).append( $( "<li>" ).html( result ) );
+}
+
 $( ".pipe-read" ).on( "click", function( event ) {
     callPipeRead();
+});
+
+$( ".authorize" ).on( "click", function( event ) {
+    authorize();
 });
 
 $( ".clear-interval" ).on( "click", function( event ) {
