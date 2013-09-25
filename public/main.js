@@ -10,7 +10,7 @@ thing.add({
     name: "coolThing",
     settings: {
         clientId: "12345",
-        redirectURL: "http://localhost:3000/redirector.html",
+        redirectURL: "http://localhost:3000/redirector.htm",
         //tokenValidationEndpoint: "https://www.googleapis.com/oauth2/v1/tokeninfo",
         authEndpoint: "http://localhost:3000/v1/auth",
         //revokeURL: "https://accounts.google.com/o/oauth2/revoke",

@@ -17,6 +17,8 @@ app.configure(function(){
   app.use(express.logger('dev'));
   app.use(express.bodyParser());
   app.use(express.methodOverride());
+  app.set('views', __dirname );
+  app.engine('html', require('ejs').renderFile);
   app.use(express.static(path.join(__dirname, 'public')));
 });
 
@@ -45,8 +47,8 @@ app.get('/v1/auth', function( request, response ) {
         response.set( 'Location',redirect_uri + "#access_token=" + access_token.token + "&expires_in=" + expires_in + "&state=" + state );
         response.send( 302 );
     } else {
-       //NO NO
-       response.send( 400 );
+       //NO NO. Redirect URL is not registered
+       response.redirect( 'server/nononopage.html#error' );
     }
 });
 
