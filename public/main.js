@@ -1,54 +1,61 @@
-var thing = AeroGear.Authorization(),
-    pipeThing;
+var authz = AeroGear.Authorization(),
+    pipe;
 
 var responseFromAuthEndpoint,
     authWindow,
     authURL,
     timer;
 
-// thing.add({
-//     name: "coolThing",
-//     settings: {
-//         clientId: "12345",
-//         redirectURL: "http://localhost:3000/redirector.html",
-//         //tokenValidationEndpoint: "https://www.googleapis.com/oauth2/v1/tokeninfo",
-//         authEndpoint: "http://localhost:3000/v1/auth",
-//         //revokeURL: "https://accounts.google.com/o/oauth2/revoke",
-//         scopes: "userinfo coolstuff"
-//     }
-// });
-
-thing.add({
+authz.add({
     name: "coolThing",
     settings: {
-        clientId: "1038594593085.apps.googleusercontent.com",
+        clientId: "12345",
         redirectURL: "http://localhost:3000/redirector.html",
-        tokenValidationEndpoint: "https://www.googleapis.com/oauth2/v1/tokeninfo",
-        authEndpoint: "https://accounts.google.com/o/oauth2/auth",
-        revokeURL: "https://accounts.google.com/o/oauth2/revoke",
-        scopes: "https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/calendar.readonly"
+        authEndpoint: "http://localhost:3000/v1/auth",
+        scopes: "userinfo coolstuff"
     }
 });
 
-pipeThing = AeroGear.Pipeline( { authorizer: thing.services.coolThing } );
+// authz.add({
+//     name: "coolThing",
+//     settings: {
+//         clientId: "1038594593085.apps.googleusercontent.com",
+//         redirectURL: "http://localhost:3000/redirector.html",
+//         //tokenValidationEndpoint: "https://www.googleapis.com/oauth2/v1/tokeninfo",
+//         authEndpoint: "https://accounts.google.com/o/oauth2/auth",
+//         revokeURL: "https://accounts.google.com/o/oauth2/revoke",
+//         scopes: "https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/calendar.readonly"
+//     }
+// });
 
+pipe = AeroGear.Pipeline( { authorizer: authz.services.coolThing } );
 
-pipeThing.add([
+// pipe.add([
+//     {
+//         name: "cal",
+//         settings: {
+//             baseURL: "https://www.googleapis.com/",
+//             endpoint: "calendar/v3/users/me/calendarList"
+//         }
+//     }
+// ]);
+
+pipe.add([
     {
         name: "cal",
         settings: {
-            baseURL: "https://www.googleapis.com/",
-            endpoint: "calendar/v3/users/me/calendarList"
+            baseURL: "http://localhost:3000/",
+            endpoint: "v1/userinfo"
         }
     }
 ]);
 
 function validate() {
-    thing.services.coolThing.validate( responseFromAuthEndpoint, {
+    authz.services.coolThing.validate( responseFromAuthEndpoint, {
         success: function( response ){
             console.log( response );
             addResults( "successful validate call" );
-            addResults( "access_token: " + response.accessToken );
+            addResults( "access_token: " + response.access_token );
         },
         error: function( error ) {
             addResults( "error validating" );
@@ -58,10 +65,13 @@ function validate() {
 }
 
 function callPipeRead() {
-    pipeThing.pipes.cal.read({
+    pipe.pipes.cal.read({
         success:function( response ) {
             addResults( "response from successful pipe" );
-            addResults( response );
+            console.log( response );
+            for( var thing in response ) {
+                addResults(  thing + " : " + response[ thing ] );
+            }
         },
         error: function( error ) {
             addResults( error.status + " " + error.statusText );
@@ -70,7 +80,7 @@ function callPipeRead() {
     });
 }
 
-function authorize() {
+function doAuthorize() {
     //Open the window to do the dance
     addResults( "Opening Auth URL" );
     addResults( authURL );
@@ -88,9 +98,9 @@ function authorize() {
             addResults( "redirect URL is back in the child" );
             responseFromAuthEndpoint = authWindow.location.href;
             clearInterval( timer );
-            addResults( "Validating response returned" );
+            addResults( "About to validate response returned" );
             validate();
-            //authWindow.close();
+            authWindow.close();
         }
 
         //If the window is closed,  clear the interval
@@ -110,7 +120,7 @@ $( ".pipe-read" ).on( "click", function( event ) {
 });
 
 $( ".authorize" ).on( "click", function( event ) {
-    authorize();
+    doAuthorize();
 });
 
 $( ".clear-interval" ).on( "click", function( event ) {
