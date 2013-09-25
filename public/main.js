@@ -78,13 +78,25 @@ function authorize() {
     //Watch the window for the location to change
     timer = setInterval( function() {
         addResults( "intervaling" );
-        if( authWindow.location.href || authWindow.location.origin ) { //this needs to be better, maybe
+        if( authWindow.closed ) {
+            clearInterval( timer );
+            addResults( "Child Window has closed" );
+            return;
+        }
+
+        if( authWindow.location.href || authWindow.location.origin ) {
             addResults( "redirect URL is back in the child" );
             responseFromAuthEndpoint = authWindow.location.href;
             clearInterval( timer );
             addResults( "Validating response returned" );
             validate();
-            authWindow.close();
+            //authWindow.close();
+        }
+
+        //If the window is closed,  clear the interval
+        if( authWindow.closed ) {
+            clearInterval( timer );
+            addResults( "Child Window has closed" );
         }
     }, 500 );
 }
