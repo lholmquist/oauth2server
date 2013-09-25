@@ -6,15 +6,27 @@ var responseFromAuthEndpoint,
     authURL,
     timer;
 
+// thing.add({
+//     name: "coolThing",
+//     settings: {
+//         clientId: "12345",
+//         redirectURL: "http://localhost:3000/redirector.html",
+//         //tokenValidationEndpoint: "https://www.googleapis.com/oauth2/v1/tokeninfo",
+//         authEndpoint: "http://localhost:3000/v1/auth",
+//         //revokeURL: "https://accounts.google.com/o/oauth2/revoke",
+//         scopes: "userinfo coolstuff"
+//     }
+// });
+
 thing.add({
     name: "coolThing",
     settings: {
-        clientId: "12345",
-        redirectURL: "http://localhost:3000/redirector.htm",
-        //tokenValidationEndpoint: "https://www.googleapis.com/oauth2/v1/tokeninfo",
-        authEndpoint: "http://localhost:3000/v1/auth",
-        //revokeURL: "https://accounts.google.com/o/oauth2/revoke",
-        scopes: "userinfo coolstuff"
+        clientId: "1038594593085.apps.googleusercontent.com",
+        redirectURL: "http://localhost:3000/redirector.html",
+        tokenValidationEndpoint: "https://www.googleapis.com/oauth2/v1/tokeninfo",
+        authEndpoint: "https://accounts.google.com/o/oauth2/auth",
+        revokeURL: "https://accounts.google.com/o/oauth2/revoke",
+        scopes: "https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/calendar.readonly"
     }
 });
 
@@ -23,10 +35,10 @@ pipeThing = AeroGear.Pipeline( { authorizer: thing.services.coolThing } );
 
 pipeThing.add([
     {
-        name: "userInfo",
+        name: "cal",
         settings: {
-            baseURL: "http://localhost:3000/",
-            endpoint: "v1/userinfo"
+            baseURL: "https://www.googleapis.com/",
+            endpoint: "calendar/v3/users/me/calendarList"
         }
     }
 ]);
@@ -34,8 +46,9 @@ pipeThing.add([
 function validate() {
     thing.services.coolThing.validate( responseFromAuthEndpoint, {
         success: function( response ){
+            console.log( response );
             addResults( "successful validate call" );
-            addResults( "access_token: " + response.access_token );
+            addResults( "access_token: " + response.accessToken );
         },
         error: function( error ) {
             addResults( "error validating" );
@@ -45,10 +58,10 @@ function validate() {
 }
 
 function callPipeRead() {
-    pipeThing.pipes.userInfo.read({
+    pipeThing.pipes.cal.read({
         success:function( response ) {
             addResults( "response from successful pipe" );
-            addResults( response.status );
+            addResults( response );
         },
         error: function( error ) {
             addResults( error.status + " " + error.statusText );
@@ -64,13 +77,14 @@ function authorize() {
     authWindow = window.open( authURL );
     //Watch the window for the location to change
     timer = setInterval( function() {
-        if( authWindow.location.href || authWindow.location.origin ) { //this needs to be better
+        addResults( "intervaling" );
+        if( authWindow.location.href || authWindow.location.origin ) { //this needs to be better, maybe
             addResults( "redirect URL is back in the child" );
             responseFromAuthEndpoint = authWindow.location.href;
             clearInterval( timer );
             addResults( "Validating response returned" );
             validate();
-            //authWindow.close();
+            authWindow.close();
         }
     }, 500 );
 }
