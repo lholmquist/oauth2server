@@ -44,7 +44,7 @@ app.get('/v1/auth', function( request, response ) {
 
         accessTokens.push( access_token );
 
-        response.set( 'Location',redirect_uri + "#access_token=" + access_token.token + "&expires_in=" + expires_in + "&state=" + state );
+        response.set( 'Location',redirect_uri + "#access_token=" + access_token.token + "&expires_in=" + expires_in + "&state=" + state + 1 );
         response.send( 302 );
     } else {
        //NO NO. Redirect URL is not registered

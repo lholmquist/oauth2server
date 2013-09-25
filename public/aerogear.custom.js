@@ -2367,6 +2367,7 @@ AeroGear.Authorization.adapters.OAuth2 = function( name, settings ) {
         localStorageName = "ag-oauth2-" + clientId,
         authEndpoint = settings.authEndpoint + "?" +
             "response_type=token" +
+            "&approval_prompt=force" +
             "&redirect_uri=" + encodeURIComponent( redirectURL ) +
             "&scope=" + encodeURIComponent( scopes ) +
             "&state=" + encodeURIComponent( state ) +
@@ -2398,12 +2399,8 @@ AeroGear.Authorization.adapters.OAuth2 = function( name, settings ) {
     };
 
     this.createError = function( options ) {
-        options = options || {}; //maybe this should be an extend?
-        return {
-            status: options.status,
-            authURL: authEndpoint,
-            statusText: options.statusText
-        };
+        options = options || {};
+        return AeroGear.extend( options, { authURL: authEndpoint } );
     };
 
     this.parseQueryString = function( locationString ) {
@@ -2452,7 +2449,7 @@ AeroGear.Authorization.adapters.OAuth2.prototype.validate = function( queryStrin
     //Make sure that the "state" value returned is the same one we sent
     if( parsedQuery.state !== state ) {
         //No Good
-        error.call( this, { status: 401 } ); //maybe this should be an extend?
+        error.call( this, { error: "invalid_request", state: state, error_description: "state's do not match"  } );
         return;
     }
 

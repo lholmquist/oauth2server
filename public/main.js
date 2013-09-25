@@ -80,6 +80,8 @@ function callPipeRead() {
     });
 }
 
+// I Would feel better if this code is not in AG JS
+
 function doAuthorize() {
     //Open the window to do the dance
     addResults( "Opening Auth URL" );
@@ -110,6 +112,8 @@ function doAuthorize() {
         }
     }, 500 );
 }
+
+// End Code
 
 function addResults( result ) {
     $( ".results ul" ).append( $( "<li>" ).html( result ) );
